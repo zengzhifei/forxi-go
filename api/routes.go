@@ -8,10 +8,11 @@ import (
 	"forxi.cn/forxi-go/app/service"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 )
 
 func SetupRoutes(router *gin.Engine, cfg *config.Config) {
-	rateLimiter := middleware.NewIPRateLimiter(100, 10)
+	rateLimiter := middleware.NewIPRateLimiter(rate.Limit(cfg.RateLimit.QPS), cfg.RateLimit.Burst)
 
 	emailService := service.NewEmailService(&cfg.Email, &cfg.Redis)
 	oauthService := service.NewOAuthService(&cfg.OAuth, &cfg.JWT, cfg.Redis.Prefix)
@@ -20,6 +21,7 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 	userController := userCtrl.NewUserController(emailService)
 	authController := userCtrl.NewAuthController(authService, &cfg.OAuth, oauthService)
 	adminController := adminCtrl.NewAdminController()
+	filePreviewController := userCtrl.NewFilePreviewController()
 
 	router.Use(middleware.CORSMiddleware())
 	router.Use(middleware.GinLogger())
@@ -31,6 +33,13 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 		{
 			public.POST("/users/register", userController.Register)
 			public.POST("/users/send-code", userController.SendRegisterCode)
+
+			filereview := public.Group("/filereview")
+			{
+				filereview.POST("/online", filePreviewController.Online)
+				filereview.POST("/local", filePreviewController.Local)
+				filereview.GET("/download", filePreviewController.Download)
+			}
 
 			auth := public.Group("/auth")
 			{

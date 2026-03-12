@@ -52,3 +52,7 @@ log:
   max_size: 100
   max_backups: 15
   max_age: 30
+
+  rate_limit:
+  qps: 100
+  burst: 10

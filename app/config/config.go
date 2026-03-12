@@ -16,6 +16,7 @@ type Config struct {
 	OAuth    OAuthConfig    `mapstructure:"oauth"`
 	Email    EmailConfig    `mapstructure:"email"`
 	Log      LogConfig      `mapstructure:"log"`
+	RateLimit RateLimitConfig `mapstructure:"rate_limit"`
 }
 
 // ServerConfig 服务器配置
@@ -89,6 +90,12 @@ type LogConfig struct {
 	MaxSize    int    `mapstructure:"max_size"`
 	MaxBackups int    `mapstructure:"max_backups"`
 	MaxAge     int    `mapstructure:"max_age"`
+}
+
+// RateLimitConfig 限流配置
+type RateLimitConfig struct {
+	QPS   int `mapstructure:"qps"`
+	Burst int `mapstructure:"burst"`
 }
 
 // LoadConfig 加载配置文件

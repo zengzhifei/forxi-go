@@ -4,9 +4,7 @@
 *.dll
 *.so
 *.dylib
-forxi
-bin/forxi
-server
+bin/**
 
 # Test binary
 *.test

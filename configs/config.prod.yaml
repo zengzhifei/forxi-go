@@ -1,0 +1,54 @@
+server:
+  port: 8080
+  mode: release
+  read_timeout: 30
+  write_timeout: 30
+
+database:
+  driver: mysql
+  host: ${DATABASE_HOST}
+  port: 3306
+  username: ${DATABASE_USERNAME}
+  password: ${DATABASE_PASSWORD}
+  database: forxi
+  charset: utf8mb4
+  max_idle_conns: 10
+  max_open_conns: 20
+  conn_max_lifetime: 7200
+
+redis:
+  host: ${REDIS_HOST}
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  db: 0
+  prefix: "forxi"
+
+jwt:
+  secret: ${JWT_SECRET}
+  access_expire: 2
+  refresh_expire: 7
+  issuer: forxi-go-prod
+
+oauth:
+  frontend_callback_url: https://forxi.cn/oauth/callback
+  password_reset_url: https://forxi.cn/reset-password
+  github:
+    client_id: ${OAUTH_GITHUB_CLIENT_ID}
+    client_secret: ${OAUTH_GITHUB_CLIENT_SECRET}
+    redirect_url: https://forxi.cn/api/oauth/github/callback
+    user_info_url: https://api.github.com/user
+
+email:
+  smtp_host: smtp.qiye.aliyun.com
+  smtp_port: 465
+  username: platform@forxi.cn
+  password: ${EMAIL_PASSWORD}
+  from_email: platform@forxi.cn
+  from_name: Forxi
+
+log:
+  level: info
+  filename: logs/app.log
+  max_size: 100
+  max_backups: 15
+  max_age: 30

@@ -385,7 +385,7 @@ Authorization: Bearer <your-jwt-token>
 
 ### 在线预览
 
-**接口**: `POST /api/filereview/online`
+**接口**: `GET /api/filereview/online`
 
 **描述**: 通过URL在线预览文件，服务器会下载文件并进行预览。
 
@@ -399,14 +399,14 @@ Authorization: Bearer <your-jwt-token>
 
 **支持的文件类型**:
 
-- 文本: txt, md, json, log
-- 图片: jpg, jpeg, png, gif, webp, svg
-- 视频: mp4, webm
+- 文本: txt, md, json, log, xml, html, htm, css, js, ts, py, java, go, rs, c, cpp, h, hpp, cs, php, rb, sh, sql, yaml, yml, toml, ini, conf, cfg, env
+- 图片: jpg, jpeg, png, gif, webp, svg, ico, bmp
+- 视频: mp4, webm, avi, mov
 - 文档: pdf
 - Office: doc, docx, xls, xlsx, ppt, pptx
 
 **限制**:
-- 文件大小不能超过 200MB
+- 文件大小不能超过配置的最大值（默认 5MB）
 - 仅支持 http:// 和 https:// 协议
 - 不支持本地或内网地址
 
@@ -428,15 +428,31 @@ Authorization: Bearer <your-jwt-token>
 
 **支持的文件类型**: 同在线预览
 
-**限制**: 文件大小不能超过 200MB
+**限制**: 文件大小不能超过配置的最大值（默认 5MB）
+
+**返回格式**:
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "type": "image|pdf|video|office|text",
+    "content": "base64编码的内容（图片、视频、pdf、文本时返回）",
+    "file": "文件名（office文件时返回，用于获取预览链接）",
+    "name": "原始文件名",
+    "mime": "文件MIME类型"
+  }
+}
+```
 
 ---
 
-### 文件下载
+### 文件缓存
 
-**接口**: `GET /api/filereview/download`
+**接口**: `GET /api/filereview/cache`
 
-**描述**: 下载预览过的文件。
+**描述**: 访问office文件的预览/下载链接。
 
 **角色**: 无需登录
 
@@ -444,9 +460,11 @@ Authorization: Bearer <your-jwt-token>
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| file | string | 是 | 文件名 |
+| file | string | 是 | 文件名（local接口返回的file字段） |
 
-**注意**: 下载链接有效期为 24 小时
+**返回**: 直接返回文件内容
+
+**注意**: 链接有效期为配置的文件缓存时间（默认30分钟）
 
 ---
 

@@ -84,7 +84,7 @@ var SupportedTypes = map[string]string{
 type PreviewResponse struct {
 	Type    string `json:"type"`    // image, pdf, video, office, text
 	Content string `json:"content"` // base64 content for non-office files
-	URL     string `json:"url"`     // original url or office viewer url
+	File    string `json:"file"`    // original url or office viewer url
 	Name    string `json:"name"`    // file name
 	Mime    string `json:"mime"`    // mime type
 }
@@ -185,8 +185,7 @@ func (c *FilePreviewController) handleUpload(ctx *gin.Context, file multipart.Fi
 		hashKey := c.redisPrefix + ":" + CacheKey
 		expireTime := time.Now().Add(time.Duration(c.config.CacheExpiry) * time.Second).Unix()
 		database.RedisClient.HSet(redisCtx, hashKey, filename, expireTime)
-		serveURL := fmt.Sprintf("/api/filereview/cache?file=%s", filename)
-		resp := c.buildPreviewResponse(data, ext, header.Filename, serveURL)
+		resp := c.buildPreviewResponse(data, ext, header.Filename, filename)
 		util.Success(ctx, resp)
 		return
 	}
@@ -260,7 +259,7 @@ func (c *FilePreviewController) buildPreviewResponse(data []byte, ext, filename,
 
 	if isOffice {
 		resp.Type = "office"
-		resp.URL = originalURL
+		resp.File = originalURL
 	} else if isImage {
 		resp.Type = "image"
 		compressed := compressImage(data)

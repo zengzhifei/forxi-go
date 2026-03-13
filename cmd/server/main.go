@@ -49,7 +49,7 @@ func main() {
 	defer middleware.Logger.Sync()
 
 	middleware.Logger.Info("Starting Forxi-Go Auth Server...")
-	configJSON, _ := json.MarshalIndent(cfg, "", "  ")
+	configJSON, _ := json.Marshal(cfg)
 	middleware.Logger.Info("Config loaded", zap.String("config", string(configJSON)))
 
 	// 初始化数据库连接

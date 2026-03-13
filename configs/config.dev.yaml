@@ -56,3 +56,7 @@ log:
 rate_limit:
   qps: 100
   burst: 10
+
+file_preview:
+  max_file_size: 5242880
+  cache_expiry: 1800

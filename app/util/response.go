@@ -1,8 +1,10 @@
 package util
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Response 统一响应格式
@@ -92,4 +94,11 @@ func TooManyRequests(c *gin.Context, message string) {
 // InternalServerError 返回500错误
 func InternalServerError(c *gin.Context, message string) {
 	Error(c, http.StatusInternalServerError, 500, message)
+}
+
+// Download 返回文件下载响应
+func Download(c *gin.Context, filePath, filename, contentType string) {
+	c.Header("Content-Type", contentType)
+	c.Header("Content-Disposition", "inline; filename="+filepath.Base(filename))
+	c.File(filePath)
 }

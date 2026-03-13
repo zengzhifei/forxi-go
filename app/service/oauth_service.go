@@ -259,13 +259,7 @@ func (s *OAuthService) HandleGitHubCallback(code string, currentUserID *int64) (
 	}
 
 	result := &OAuthResult{
-		IsNewUser:      true,
-		NeedsEmailBind: true,
-		Provider:       "github",
-		Nickname:       nickname,
-		Avatar:         userInfo.Avatar,
-		Bio:            userInfo.Bio,
-		BindToken:      bindToken,
+		BindToken: bindToken,
 	}
 	return nil, nil, false, errors.New("needs_email_bind:" + result.BindToken)
 }

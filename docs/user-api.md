@@ -9,6 +9,7 @@
 - [用户接口](#用户接口)
 - [认证接口](#认证接口)
 - [OAuth接口](#oauth接口)
+- [文件预览接口](#文件预览接口)
 
 ---
 
@@ -164,6 +165,21 @@ Authorization: Bearer <your-jwt-token>
 | email | string | 是 | 邮箱地址 |
 | password | string | 是 | 密码 |
 
+**成功响应**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "access_token": "xxx",
+    "refresh_token": "xxx",
+    "expires_in": 86400,
+    "token_type": "Bearer"
+  }
+}
+```
+
 ---
 
 ### 刷新令牌
@@ -237,6 +253,13 @@ Authorization: Bearer <your-jwt-token>
 
 **认证**: 需要
 
+**查询参数**:
+
+| 参数名 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| page | int | 1 | 页码 |
+| pageSize | int | 10 | 每页数量 |
+
 ---
 
 ## OAuth接口
@@ -248,6 +271,12 @@ Authorization: Bearer <your-jwt-token>
 **描述**: 获取GitHub授权URL。
 
 **角色**: 无需登录
+
+**可选查询参数**:
+
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| bind_token | string | 已登录用户绑定OAuth时使用 |
 
 ---
 
@@ -264,15 +293,16 @@ Authorization: Bearer <your-jwt-token>
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
 | code | string | 是 | 授权码 |
+| state | string | 否 | 状态参数 |
 
 **返回情况**:
 
-1. **已绑定** - 直接登录成功：
+1. **已绑定** - 直接登录成功，重定向到：
    ```
    {frontend_callback_url}?access_token=xxx&refresh_token=xxx&user_id=xxx
    ```
 
-2. **需要绑定邮箱**：
+2. **需要绑定邮箱**（GitHub未返回邮箱），重定向到：
    ```
    {frontend_callback_url}?needs_email_bind=true&bind_token=xxx
    ```
@@ -296,52 +326,12 @@ Authorization: Bearer <your-jwt-token>
 | email_code | string | 是 | 邮箱验证码 |
 | password | string | 是 | 登录密码（至少8位） |
 | confirm_password | string | 是 | 确认密码 |
+| nickname | string | 否 | 昵称（可选） |
 
 **返回情况**:
 
 - **新邮箱**: 创建用户 + 绑定OAuth → 返回登录信息
 - **已存在邮箱**: 验证密码 → 绑定OAuth → 返回登录信息
-
----
-
-### 微信授权
-
-**接口**: `GET /api/oauth/wechat/authorize`
-
-**描述**: 获取微信授权URL。
-
-**角色**: 无需登录
-
----
-
-### 微信回调
-
-**接口**: `GET /api/oauth/wechat/callback`
-
-**描述**: 处理微信授权回调。
-
-**角色**: 无需登录
-
----
-
-### 绑定第三方账号
-
-**接口**: `POST /api/oauth/bind`
-
-**描述**: 将第三方账号绑定到当前已登录用户。
-
-**角色**: 需要登录
-
-**认证**: 需要
-
-**请求参数**:
-
-| 参数名 | 类型 | 必填 | 说明 |
-|--------|------|------|------|
-| provider | string | 是 | github/wechat |
-| provider_user_id | string | 是 | 第三方用户ID |
-| access_token | string | 是 | 访问令牌 |
-| refresh_token | string | 否 | 刷新令牌 |
 
 ---
 
@@ -359,7 +349,7 @@ Authorization: Bearer <your-jwt-token>
 
 | 参数名 | 类型 | 必填 | 说明 |
 |--------|------|------|------|
-| provider | string | 是 | github/wechat |
+| provider | string | 是 | github |
 
 ---
 
@@ -372,3 +362,105 @@ Authorization: Bearer <your-jwt-token>
 **角色**: 需要登录
 
 **认证**: 需要
+
+**成功响应**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "provider": "github",
+      "provider_user_id": "xxx",
+      "bound_at": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## 文件预览接口
+
+### 在线预览
+
+**接口**: `POST /api/filereview/online`
+
+**描述**: 通过URL在线预览文件，服务器会下载文件并进行预览。
+
+**角色**: 无需登录
+
+**请求参数**:
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| url | string | 是 | 文件URL地址 |
+
+**支持的文件类型**:
+
+- 文本: txt, md, json, log
+- 图片: jpg, jpeg, png, gif, webp, svg
+- 视频: mp4, webm
+- 文档: pdf
+- Office: doc, docx, xls, xlsx, ppt, pptx
+
+**限制**:
+- 文件大小不能超过 200MB
+- 仅支持 http:// 和 https:// 协议
+- 不支持本地或内网地址
+
+---
+
+### 本地预览
+
+**接口**: `POST /api/filereview/local`
+
+**描述**: 上传本地文件进行预览。
+
+**角色**: 无需登录
+
+**请求参数**:
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| file | file | 是 | 要上传的文件 |
+
+**支持的文件类型**: 同在线预览
+
+**限制**: 文件大小不能超过 200MB
+
+---
+
+### 文件下载
+
+**接口**: `GET /api/filereview/download`
+
+**描述**: 下载预览过的文件。
+
+**角色**: 无需登录
+
+**查询参数**:
+
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| file | string | 是 | 文件名 |
+
+**注意**: 下载链接有效期为 24 小时
+
+---
+
+## 错误码说明
+
+### 业务错误码
+
+| 错误码 | 说明 |
+|--------|------|
+| 1001 | 邮箱已存在 |
+| 1002 | 用户不存在 |
+| 1003 | 密码错误 |
+| 1004 | 令牌无效或过期 |
+| 1005 | 账号被禁用 |
+| 1006 | 邮箱未验证 |
+| 1007 | OAuth账号已绑定 |
+| 1008 | OAuth账号不存在 |

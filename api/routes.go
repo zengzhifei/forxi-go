@@ -21,7 +21,7 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 	userController := userCtrl.NewUserController(emailService)
 	authController := userCtrl.NewAuthController(authService, &cfg.OAuth, oauthService)
 	adminController := adminCtrl.NewAdminController()
-	filePreviewController := userCtrl.NewFilePreviewController()
+	filePreviewController := userCtrl.NewFilePreviewController(&cfg.FilePreview, &cfg.Redis)
 
 	router.Use(middleware.CORSMiddleware())
 	router.Use(middleware.GinLogger())
@@ -36,9 +36,9 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 
 			filereview := public.Group("/filereview")
 			{
-				filereview.POST("/online", filePreviewController.Online)
+				filereview.GET("/online", filePreviewController.Online)
 				filereview.POST("/local", filePreviewController.Local)
-				filereview.GET("/download", filePreviewController.Download)
+				filereview.GET("/cache", filePreviewController.Cache)
 			}
 
 			auth := public.Group("/auth")

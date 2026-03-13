@@ -139,11 +139,12 @@ func (c *AuthController) ResetPassword(ctx *gin.Context) {
 	err := c.authService.ResetPassword(req.Token, req.NewPassword)
 	if err != nil {
 		errMsg := err.Error()
-		if errMsg == "invalid or expired token" {
+		switch errMsg {
+		case "invalid or expired token":
 			util.BadRequest(ctx, "令牌无效或已过期")
-		} else if errMsg == "user not found" {
+		case "user not found":
 			util.BadRequest(ctx, "用户不存在")
-		} else {
+		default:
 			util.InternalServerError(ctx, errMsg)
 		}
 		return

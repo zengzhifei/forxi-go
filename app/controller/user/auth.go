@@ -356,7 +356,7 @@ func (c *AuthController) GetOAuthAccounts(ctx *gin.Context) {
 		HTMLURL  string `json:"html_url"`
 	}
 
-	var response []OAuthAccountResponse
+	var response []OAuthAccountResponse = []OAuthAccountResponse{}
 	for _, account := range accounts {
 		resp := OAuthAccountResponse{
 			Provider: account.Provider,

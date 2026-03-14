@@ -146,6 +146,72 @@ Authorization: Bearer <your-jwt-token>
 | old_password | string | 是 | 当前密码 |
 | new_password | string | 是 | 新密码 |
 
+#### 请求示例
+
+```http
+PUT /api/users/password HTTP/1.1
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "old_password": "old_password",
+    "new_password": "new_password"
+}
+```
+
+#### 响应示例
+
+```json
+{
+    "code": 200,
+    "message": "密码修改成功",
+    "data": null
+}
+```
+
+### 上传文件
+
+#### 请求示例
+
+```http
+POST /api/upload HTTP/1.1
+Content-Type: multipart/form-data
+
+scene: avatar
+file: [file]
+```
+
+#### 响应示例
+
+```json
+{
+    "code": 200,
+    "message": "success",
+    "data": {
+        "url": "https://cdn.forxi.cn/avatar/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11.jpg"
+    }
+}
+```
+
+#### 说明
+
+- 路径：`POST /api/upload`
+- 参数：
+  - `scene`: 场景类型，如 `avatar`
+  - `file`: 要上传的文件
+- 文件名使用 UUID 生成
+
+#### 场景配置
+
+| 场景 | 允许类型 | 最大大小 | 需要登录 |
+|------|----------|----------|----------|
+| avatar | image/jpeg, image/png, image/gif, image/webp | 2MB | 是 |
+
+#### 更新用户头像
+
+1. 调用上传接口上传头像文件，获取 URL
+2. 在更新用户资料接口（`PUT /api/users/profile`）的 `avatar` 字段传入获得的 URL
+
 ---
 
 ## 认证接口

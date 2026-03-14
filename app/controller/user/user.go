@@ -47,7 +47,7 @@ func (c *UserController) Register(ctx *gin.Context) {
 func (c *UserController) GetProfile(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 	if !exists {
-		util.Unauthorized(ctx, "用户未认证")
+		util.Unauthorized(ctx, "用户未登录")
 		return
 	}
 
@@ -63,7 +63,7 @@ func (c *UserController) GetProfile(ctx *gin.Context) {
 func (c *UserController) UpdateProfile(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 	if !exists {
-		util.Unauthorized(ctx, "用户未认证")
+		util.Unauthorized(ctx, "用户未登录")
 		return
 	}
 
@@ -90,7 +90,7 @@ func (c *UserController) UpdateProfile(ctx *gin.Context) {
 func (c *UserController) ChangePassword(ctx *gin.Context) {
 	userID, exists := ctx.Get("user_id")
 	if !exists {
-		util.Unauthorized(ctx, "用户未认证")
+		util.Unauthorized(ctx, "用户未登录")
 		return
 	}
 

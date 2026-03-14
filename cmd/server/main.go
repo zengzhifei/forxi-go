@@ -15,6 +15,7 @@ import (
 	"forxi.cn/forxi-go/app/config"
 	"forxi.cn/forxi-go/app/database"
 	"forxi.cn/forxi-go/app/middleware"
+	"forxi.cn/forxi-go/app/storage"
 	"forxi.cn/forxi-go/app/util"
 
 	"github.com/gin-gonic/gin"
@@ -62,6 +63,11 @@ func main() {
 		middleware.Logger.Fatal("Failed to initialize redis", zap.String("error", err.Error()))
 	}
 	middleware.Logger.Info("Redis connected successfully")
+
+	// 初始化七牛云
+	if err := storage.Init(&cfg.Storage); err != nil {
+		middleware.Logger.Warn("Failed to initialize storage", zap.String("error", err.Error()))
+	}
 
 	// 创建Gin引擎
 	router := gin.New()

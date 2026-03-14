@@ -22,6 +22,7 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 	authController := userCtrl.NewAuthController(authService, &cfg.OAuth, oauthService)
 	adminController := adminCtrl.NewAdminController()
 	filePreviewController := userCtrl.NewFilePreviewController(&cfg.FilePreview, &cfg.Redis)
+	uploadController := userCtrl.NewUploadController()
 
 	router.Use(middleware.CORSMiddleware())
 	router.Use(middleware.GinLogger())
@@ -33,6 +34,7 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 		{
 			public.POST("/users/register", userController.Register)
 			public.POST("/users/send-code", userController.SendRegisterCode)
+			public.POST("/upload", middleware.OptionalAuthMiddleware(cfg.JWT.Secret), uploadController.Upload)
 
 			filereview := public.Group("/filereview")
 			{

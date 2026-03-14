@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+
 	"forxi.cn/forxi-go/app/model"
 	"forxi.cn/forxi-go/app/repository"
 	"forxi.cn/forxi-go/app/util"
@@ -42,7 +43,7 @@ func (s *UserService) Register(req *RegisterRequest) (*model.User, error) {
 	if err := util.ValidatePasswordStrength(req.Password); err != nil {
 		return nil, err
 	}
-	
+
 	// 验证邮箱验证码
 	valid, err := s.emailService.VerifyRegisterCode(req.Email, req.VerificationCode)
 	if err != nil {
@@ -51,7 +52,7 @@ func (s *UserService) Register(req *RegisterRequest) (*model.User, error) {
 	if !valid {
 		return nil, errors.New("invalid or expired verification code")
 	}
-	
+
 	// 检查邮箱是否已存在
 	exists, err := s.userRepo.ExistsByEmail(req.Email)
 	if err != nil {
@@ -72,12 +73,12 @@ func (s *UserService) Register(req *RegisterRequest) (*model.User, error) {
 
 	// 创建用户（邮箱已通过验证码验证，设置email_verified为true）
 	user := &model.User{
-		UserID:       userID,
-		Email:        req.Email,
-		PasswordHash: passwordHash,
-		Nickname:     req.Nickname,
-		Role:         "user",
-		Status:       "active",
+		UserID:        userID,
+		Email:         req.Email,
+		PasswordHash:  passwordHash,
+		Nickname:      req.Nickname,
+		Role:          "user",
+		Status:        "active",
 		EmailVerified: true,
 	}
 
@@ -136,18 +137,15 @@ func (s *UserService) ChangePassword(userID int64, oldPassword, newPassword stri
 		return err
 	}
 
-	// 验证旧密码
 	if !util.CheckPassword(oldPassword, user.PasswordHash) {
 		return errors.New("old password is incorrect")
 	}
 
-	// 加密新密码
 	newPasswordHash, err := util.HashPassword(newPassword)
 	if err != nil {
 		return err
 	}
 
-	// 更新密码
 	return s.userRepo.UpdateFields(userID, map[string]interface{}{
 		"password_hash": newPasswordHash,
 	})

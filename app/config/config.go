@@ -18,6 +18,7 @@ type Config struct {
 	Log         LogConfig         `mapstructure:"log"`
 	RateLimit   RateLimitConfig   `mapstructure:"rate_limit"`
 	FilePreview FilePreviewConfig `mapstructure:"file_preview"`
+	Storage     StorageConfig     `mapstructure:"storage"`
 }
 
 // ServerConfig 服务器配置
@@ -102,7 +103,21 @@ type RateLimitConfig struct {
 // FilePreviewConfig 文件预览配置
 type FilePreviewConfig struct {
 	MaxFileSize int64 `mapstructure:"max_file_size"` // 文件大小限制（字节）
-	CacheExpiry int   `mapstructure:"cache_expiry"` // 缓存过期时间（秒）
+	CacheExpiry int   `mapstructure:"cache_expiry"`  // 缓存过期时间（秒）
+}
+
+// StorageConfig 存储配置
+type StorageConfig struct {
+	Active string            `mapstructure:"active"`
+	Qiniu  StorageConfigItem `mapstructure:"qiniu"`
+}
+
+// QiniuConfig 七牛云配置
+type StorageConfigItem struct {
+	AccessKey string `mapstructure:"access_key"` // AccessKey
+	SecretKey string `mapstructure:"secret_key"` // SecretKey
+	Bucket    string `mapstructure:"bucket"`     // 存储空间名称
+	Domain    string `mapstructure:"domain"`     // CDN域名
 }
 
 // LoadConfig 加载配置文件

@@ -21,7 +21,7 @@ redis:
   port: 6379
   password: ${REDIS_PASSWORD}
   db: 0
-  prefix: "forxi"
+  prefix: forxi
 
 jwt:
   secret: ${JWT_SECRET}
@@ -60,3 +60,11 @@ rate_limit:
 file_preview:
   max_file_size: 5242880
   cache_expiry: 1800
+
+storage:
+  active: qiniu
+  qiniu:
+    access_key: ${STORAGE_QINIU_ACCESS_KEY}
+    secret_key: ${STORAGE_QINIU_SECRET_KEY}
+    bucket: forxi
+    domain: https://cdn.forxi.cn

@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"forxi.cn/forxi-go/app/database"
 	"forxi.cn/forxi-go/app/model"
+	"forxi.cn/forxi-go/app/resource"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +14,7 @@ type OAuthRepository struct {
 // NewOAuthRepository 创建OAuth仓储实例
 func NewOAuthRepository() *OAuthRepository {
 	return &OAuthRepository{
-		db: database.GetDB(),
+		db: resource.DB,
 	}
 }
 

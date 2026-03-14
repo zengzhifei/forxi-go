@@ -1,9 +1,10 @@
 package admin
 
 import (
+	"strconv"
+
 	"forxi.cn/forxi-go/app/service"
 	"forxi.cn/forxi-go/app/util"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +15,7 @@ type AdminController struct {
 
 func NewAdminController() *AdminController {
 	return &AdminController{
-		userService: service.NewUserService(nil),
+		userService: service.NewUserService(),
 	}
 }
 

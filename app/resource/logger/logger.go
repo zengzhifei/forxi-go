@@ -1,18 +1,14 @@
-package middleware
+package logger
 
 import (
 	"forxi.cn/forxi-go/app/config"
-	"time"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logger *zap.Logger
-
 // InitLogger 初始化日志
-func InitLogger(cfg *config.LogConfig) error {
+func InitLogger(cfg *config.LogConfig) (*zap.Logger, error) {
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "time",
 		LevelKey:       "level",
@@ -40,8 +36,8 @@ func InitLogger(cfg *config.LogConfig) error {
 		getLogLevel(cfg.Level),
 	)
 
-	Logger = zap.New(core, zap.AddCaller())
-	return nil
+	zapLogger := zap.New(core, zap.AddCaller())
+	return zapLogger, nil
 }
 
 // getLogLevel 获取日志级别
@@ -57,27 +53,5 @@ func getLogLevel(level string) zapcore.Level {
 		return zapcore.ErrorLevel
 	default:
 		return zapcore.InfoLevel
-	}
-}
-
-// GinLogger Gin日志中间件
-func GinLogger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
-
-		c.Next()
-
-		cost := time.Since(start)
-		Logger.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.Duration("latency", cost),
-		)
 	}
 }

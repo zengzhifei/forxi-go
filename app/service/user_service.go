@@ -5,20 +5,22 @@ import (
 
 	"forxi.cn/forxi-go/app/model"
 	"forxi.cn/forxi-go/app/repository"
+	"forxi.cn/forxi-go/app/resource"
+	"forxi.cn/forxi-go/app/resource/email"
 	"forxi.cn/forxi-go/app/util"
 )
 
 // UserService 用户服务层
 type UserService struct {
 	userRepo     *repository.UserRepository
-	emailService *EmailService
+	emailService *email.EmailService
 }
 
 // NewUserService 创建用户服务实例
-func NewUserService(emailService *EmailService) *UserService {
+func NewUserService() *UserService {
 	return &UserService{
 		userRepo:     repository.NewUserRepository(),
-		emailService: emailService,
+		emailService: resource.EmailService,
 	}
 }
 
@@ -69,7 +71,7 @@ func (s *UserService) Register(req *RegisterRequest) (*model.User, error) {
 	}
 
 	// 使用短雪花算法生成user_id（约11-13位数字）
-	userID := util.GenerateShortSnowflakeID()
+	userID := resource.ShortSnowflake.NextID()
 
 	// 创建用户（邮箱已通过验证码验证，设置email_verified为true）
 	user := &model.User{

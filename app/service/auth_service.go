@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"forxi.cn/forxi-go/app/config"
-	"forxi.cn/forxi-go/app/database"
-	"forxi.cn/forxi-go/app/middleware"
 	"forxi.cn/forxi-go/app/model"
 	"forxi.cn/forxi-go/app/repository"
+	"forxi.cn/forxi-go/app/resource"
+	"forxi.cn/forxi-go/app/resource/email"
+	"forxi.cn/forxi-go/app/resource/rds"
 	"forxi.cn/forxi-go/app/util"
 	"go.uber.org/zap"
 
@@ -22,24 +23,20 @@ type AuthService struct {
 	userRepo     *repository.UserRepository
 	loginLogRepo *repository.LoginLogRepository
 	redisClient  *redis.Client
-	redisPrefix  string // Redis key前缀
-	rateLimiter  *middleware.IPRateLimiter
 	config       *config.JWTConfig
-	emailService *EmailService
+	emailService *email.EmailService
 	oauthConfig  *config.OAuthConfig
 }
 
 // NewAuthService 创建认证服务实例
-func NewAuthService(cfg *config.JWTConfig, redisConfig *config.RedisConfig, rateLimiter *middleware.IPRateLimiter, emailService *EmailService, oauthConfig *config.OAuthConfig) *AuthService {
+func NewAuthService() *AuthService {
 	return &AuthService{
 		userRepo:     repository.NewUserRepository(),
 		loginLogRepo: repository.NewLoginLogRepository(),
-		redisClient:  database.GetRedis(),
-		redisPrefix:  redisConfig.Prefix,
-		rateLimiter:  rateLimiter,
-		config:       cfg,
-		emailService: emailService,
-		oauthConfig:  oauthConfig,
+		redisClient:  resource.Redis,
+		config:       &resource.Cfg.JWT,
+		emailService: resource.EmailService,
+		oauthConfig:  &resource.Cfg.OAuth,
 	}
 }
 
@@ -147,14 +144,14 @@ func (s *AuthService) RequestPasswordReset(email string) error {
 	token := util.GenerateEmailVerifyToken()
 
 	// 存储到Redis：token -> user_id，15分钟过期
-	tokenKey := fmt.Sprintf("%s:password:reset:token:%s", s.redisPrefix, token)
+	tokenKey := rds.Key(rds.KeyPasswordResetToken, token)
 	err = s.redisClient.Set(ctx, tokenKey, user.UserID, 15*time.Minute).Err()
 	if err != nil {
 		return fmt.Errorf("failed to store reset token: %w", err)
 	}
 
 	// 同时存储：email -> token（用于防止重复请求）
-	emailKey := fmt.Sprintf("%s:password:reset:email:%s", s.redisPrefix, email)
+	emailKey := rds.Key(rds.KeyPasswordResetEmail, email)
 	err = s.redisClient.Set(ctx, emailKey, token, 15*time.Minute).Err()
 	if err != nil {
 		return fmt.Errorf("failed to store email mapping: %w", err)
@@ -166,7 +163,7 @@ func (s *AuthService) RequestPasswordReset(email string) error {
 	// 发送重置邮件
 	err = s.emailService.SendResetPasswordLink(email, resetLink)
 	if err != nil {
-		middleware.Logger.Error("Failed to send password reset email", zap.String("email", email), zap.Error(err))
+		resource.Logger.Error("Failed to send password reset email", zap.String("email", email), zap.Error(err))
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
@@ -178,7 +175,7 @@ func (s *AuthService) ResetPassword(token, newPassword string) error {
 	ctx := context.Background()
 
 	// 从Redis获取user_id
-	tokenKey := fmt.Sprintf("%s:password:reset:token:%s", s.redisPrefix, token)
+	tokenKey := rds.Key(rds.KeyPasswordResetToken, token)
 	userIDStr, err := s.redisClient.Get(ctx, tokenKey).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -222,7 +219,7 @@ func (s *AuthService) ResetPassword(token, newPassword string) error {
 	s.redisClient.Del(ctx, tokenKey)
 
 	// 删除email映射
-	emailKey := fmt.Sprintf("%s:password:reset:email:%s", s.redisPrefix, user.Email)
+	emailKey := rds.Key(rds.KeyPasswordResetEmail, user.Email)
 	s.redisClient.Del(ctx, emailKey)
 
 	return nil

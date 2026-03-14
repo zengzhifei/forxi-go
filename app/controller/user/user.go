@@ -1,6 +1,8 @@
 package user
 
 import (
+	"forxi.cn/forxi-go/app/resource"
+	"forxi.cn/forxi-go/app/resource/email"
 	"forxi.cn/forxi-go/app/service"
 	"forxi.cn/forxi-go/app/util"
 
@@ -9,13 +11,13 @@ import (
 
 type UserController struct {
 	userService  *service.UserService
-	emailService *service.EmailService
+	emailService *email.EmailService
 }
 
-func NewUserController(emailService *service.EmailService) *UserController {
+func NewUserController() *UserController {
 	return &UserController{
-		userService:  service.NewUserService(emailService),
-		emailService: emailService,
+		userService:  service.NewUserService(),
+		emailService: resource.EmailService,
 	}
 }
 

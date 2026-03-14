@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"forxi.cn/forxi-go/app/config"
+	"forxi.cn/forxi-go/app/resource"
 	"forxi.cn/forxi-go/app/service"
 	"forxi.cn/forxi-go/app/util"
 
@@ -19,11 +19,13 @@ type AuthController struct {
 	frontendCallbackURL string
 }
 
-func NewAuthController(authService *service.AuthService, oauthCfg *config.OAuthConfig, oauthService *service.OAuthService) *AuthController {
+func NewAuthController() *AuthController {
+	authService := service.NewAuthService()
+	oauthService := service.NewOAuthService()
 	return &AuthController{
 		authService:         authService,
 		oauthService:        oauthService,
-		frontendCallbackURL: oauthCfg.FrontendCallbackURL,
+		frontendCallbackURL: resource.Cfg.OAuth.FrontendCallbackURL,
 	}
 }
 

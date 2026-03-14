@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"forxi.cn/forxi-go/app/middleware"
-	"forxi.cn/forxi-go/app/storage"
+	"forxi.cn/forxi-go/app/resource"
+	"forxi.cn/forxi-go/app/resource/storage"
 	"forxi.cn/forxi-go/app/util"
 
 	"github.com/gin-gonic/gin"
@@ -91,11 +91,11 @@ func (c *UploadController) Upload(ctx *gin.Context) {
 		return
 	}
 
-	url, err := storage.GetInstance().UploadReader(bytes.NewReader(data), objectKey, &storage.UploadOptions{
+	url, err := resource.Storage.UploadReader(bytes.NewReader(data), objectKey, &storage.UploadOptions{
 		FileName: header.Filename,
 	})
 	if err != nil {
-		middleware.Logger.Error("upload failed", zap.String("error", err.Error()))
+		resource.Logger.Error("upload failed", zap.String("error", err.Error()))
 		util.InternalServerError(ctx, "文件上传失败")
 		return
 	}

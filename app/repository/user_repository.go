@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"forxi.cn/forxi-go/app/database"
 	"forxi.cn/forxi-go/app/model"
+	"forxi.cn/forxi-go/app/resource"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +14,7 @@ type UserRepository struct {
 // NewUserRepository 创建用户仓库实例
 func NewUserRepository() *UserRepository {
 	return &UserRepository{
-		db: database.GetDB(),
+		db: resource.DB,
 	}
 }
 

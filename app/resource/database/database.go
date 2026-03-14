@@ -2,20 +2,18 @@ package database
 
 import (
 	"fmt"
-	"forxi.cn/forxi-go/app/config"
 	"log"
 	"time"
+
+	"forxi.cn/forxi-go/app/config"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-// DB 全局数据库连接实例
-var DB *gorm.DB
-
 // InitDatabase 初始化数据库连接
-func InitDatabase(cfg *config.DatabaseConfig) error {
+func InitDatabase(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&parseTime=True&loc=Local",
 		cfg.Username,
 		cfg.Password,
@@ -41,13 +39,13 @@ func InitDatabase(cfg *config.DatabaseConfig) error {
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
 	// 获取底层SQL DB实例
 	sqlDB, err := db.DB()
 	if err != nil {
-		return fmt.Errorf("failed to get database instance: %w", err)
+		return nil, fmt.Errorf("failed to get database instance: %w", err)
 	}
 
 	// 配置连接池
@@ -57,16 +55,10 @@ func InitDatabase(cfg *config.DatabaseConfig) error {
 
 	// 测试连接
 	if err := sqlDB.Ping(); err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	DB = db
 	log.Println("Database connection established successfully")
 
-	return nil
-}
-
-// GetDB 获取数据库连接实例
-func GetDB() *gorm.DB {
-	return DB
+	return db, nil
 }

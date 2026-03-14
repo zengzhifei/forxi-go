@@ -1,27 +1,23 @@
 package api
 
 import (
-	"forxi.cn/forxi-go/app/config"
 	adminCtrl "forxi.cn/forxi-go/app/controller/admin"
 	userCtrl "forxi.cn/forxi-go/app/controller/user"
 	"forxi.cn/forxi-go/app/middleware"
-	"forxi.cn/forxi-go/app/service"
+	"forxi.cn/forxi-go/app/resource"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
 
-func SetupRoutes(router *gin.Engine, cfg *config.Config) {
+func SetupRoutes(router *gin.Engine) {
+	cfg := resource.Cfg
 	rateLimiter := middleware.NewIPRateLimiter(rate.Limit(cfg.RateLimit.QPS), cfg.RateLimit.Burst)
 
-	emailService := service.NewEmailService(&cfg.Email, &cfg.Redis)
-	oauthService := service.NewOAuthService(&cfg.OAuth, &cfg.JWT, cfg.Redis.Prefix)
-	authService := service.NewAuthService(&cfg.JWT, &cfg.Redis, rateLimiter, emailService, &cfg.OAuth)
-
-	userController := userCtrl.NewUserController(emailService)
-	authController := userCtrl.NewAuthController(authService, &cfg.OAuth, oauthService)
+	userController := userCtrl.NewUserController()
+	authController := userCtrl.NewAuthController()
 	adminController := adminCtrl.NewAdminController()
-	filePreviewController := userCtrl.NewFilePreviewController(&cfg.FilePreview, &cfg.Redis)
+	filePreviewController := userCtrl.NewFilePreviewController()
 	uploadController := userCtrl.NewUploadController()
 
 	router.Use(middleware.CORSMiddleware())
@@ -40,7 +36,6 @@ func SetupRoutes(router *gin.Engine, cfg *config.Config) {
 			{
 				filereview.GET("/online", filePreviewController.Online)
 				filereview.POST("/local", filePreviewController.Local)
-				filereview.GET("/cache", filePreviewController.Cache)
 			}
 
 			auth := public.Group("/auth")

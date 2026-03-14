@@ -4,16 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
 
 	"forxi.cn/forxi-go/app/config"
-	"forxi.cn/forxi-go/app/database"
 	"forxi.cn/forxi-go/app/model"
 	"forxi.cn/forxi-go/app/repository"
+	"forxi.cn/forxi-go/app/resource"
+	"forxi.cn/forxi-go/app/resource/rds"
 	"forxi.cn/forxi-go/app/util"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -27,20 +27,18 @@ type OAuthService struct {
 	userRepo    *repository.UserRepository
 	oauthRepo   *repository.OAuthRepository
 	redisClient *redis.Client
-	redisPrefix string
 	config      *config.OAuthConfig
 	jwtConfig   *config.JWTConfig
 }
 
 // NewOAuthService 创建OAuth服务实例
-func NewOAuthService(cfg *config.OAuthConfig, jwtCfg *config.JWTConfig, redisPrefix string) *OAuthService {
+func NewOAuthService() *OAuthService {
 	return &OAuthService{
 		userRepo:    repository.NewUserRepository(),
 		oauthRepo:   repository.NewOAuthRepository(),
-		redisClient: database.GetRedis(),
-		redisPrefix: redisPrefix,
-		config:      cfg,
-		jwtConfig:   jwtCfg,
+		redisClient: resource.Redis,
+		config:      &resource.Cfg.OAuth,
+		jwtConfig:   &resource.Cfg.JWT,
 	}
 }
 
@@ -249,7 +247,7 @@ func (s *OAuthService) HandleGitHubCallback(code string, currentUserID *int64) (
 	}
 
 	ctx := context.Background()
-	bindKey := fmt.Sprintf("%s:oauth:bind:%s", s.redisPrefix, bindToken)
+	bindKey := rds.Key(rds.KeyOAuthBind, bindToken)
 	bindData, err := json.Marshal(bindInfo)
 	if err != nil {
 		return nil, nil, false, errors.New("failed to marshal bind info")
@@ -268,7 +266,7 @@ func (s *OAuthService) HandleGitHubCallback(code string, currentUserID *int64) (
 func (s *OAuthService) BindEmailWithGitHub(bindToken, email, emailCode, password string) (*model.User, *util.TokenPair, error) {
 	ctx := context.Background()
 
-	bindKey := fmt.Sprintf("%s:oauth:bind:%s", s.redisPrefix, bindToken)
+	bindKey := rds.Key(rds.KeyOAuthBind, bindToken)
 	bindData, err := s.redisClient.Get(ctx, bindKey).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -286,7 +284,7 @@ func (s *OAuthService) BindEmailWithGitHub(bindToken, email, emailCode, password
 		return nil, nil, errors.New("invalid bind token")
 	}
 
-	codeKey := fmt.Sprintf("%s:email:verify:register:%s", s.redisPrefix, email)
+	codeKey := rds.Key(rds.KeyEmailVerifyReg, email)
 	codeValue, err := s.redisClient.Get(ctx, codeKey).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -354,7 +352,7 @@ func (s *OAuthService) BindEmailWithGitHub(bindToken, email, emailCode, password
 		return nil, nil, err
 	}
 
-	userID := util.GenerateShortSnowflakeID()
+	userID := resource.ShortSnowflake.NextID()
 	user := &model.User{
 		UserID:        userID,
 		Email:         email,

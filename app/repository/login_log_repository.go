@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"forxi.cn/forxi-go/app/database"
 	"forxi.cn/forxi-go/app/model"
+	"forxi.cn/forxi-go/app/resource"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +14,7 @@ type LoginLogRepository struct {
 // NewLoginLogRepository 创建登录日志仓库实例
 func NewLoginLogRepository() *LoginLogRepository {
 	return &LoginLogRepository{
-		db: database.GetDB(),
+		db: resource.DB,
 	}
 }
 

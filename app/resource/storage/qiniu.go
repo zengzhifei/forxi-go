@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
-	"sync"
 
 	"forxi.cn/forxi-go/app/config"
 
@@ -14,22 +14,6 @@ import (
 	"github.com/qiniu/go-sdk/v7/storagev2/http_client"
 	"github.com/qiniu/go-sdk/v7/storagev2/uploader"
 )
-
-var (
-	storageOnce sync.Once
-)
-
-func Init(cfg *config.StorageConfig) error {
-	var initErr error
-	storageOnce.Do(func() {
-		qiniu := NewQiniuStorage()
-		initErr = qiniu.Init(cfg)
-		if initErr == nil && cfg.Active == "qiniu" {
-			storageInstance = qiniu
-		}
-	})
-	return initErr
-}
 
 type QiniuStorage struct {
 	cfg       *config.StorageConfigItem
@@ -74,6 +58,7 @@ func (q *QiniuStorage) UploadFile(file string, objectKey string, options *Upload
 	objectOptions := &uploader.ObjectOptions{
 		BucketName: q.cfg.Bucket,
 		ObjectName: &objectKey,
+		FileName:   filepath.Base(objectKey),
 	}
 	if options != nil {
 		if options.CustomVars != nil {
@@ -102,6 +87,7 @@ func (q *QiniuStorage) UploadReader(reader io.Reader, objectKey string, options 
 	objectOptions := &uploader.ObjectOptions{
 		BucketName: q.cfg.Bucket,
 		ObjectName: &objectKey,
+		FileName:   filepath.Base(objectKey),
 	}
 	if options != nil {
 		if options.CustomVars != nil {

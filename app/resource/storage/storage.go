@@ -6,8 +6,6 @@ import (
 	"forxi.cn/forxi-go/app/config"
 )
 
-var storageInstance Storage
-
 type UploadOptions struct {
 	FileName          string
 	CustomVars        map[string]string
@@ -20,8 +18,4 @@ type Storage interface {
 	UploadFile(file string, objectKey string, options *UploadOptions) (string, error)
 	UploadReader(reader io.Reader, objectKey string, options *UploadOptions) (string, error)
 	UploadDirectory(dir string, options *UploadOptions) error
-}
-
-func GetInstance() Storage {
-	return storageInstance
 }

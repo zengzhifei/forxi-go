@@ -9,16 +9,15 @@ import (
 
 // Config 应用配置结构体
 type Config struct {
-	Server      ServerConfig      `mapstructure:"server"`
-	Database    DatabaseConfig    `mapstructure:"database"`
-	Redis       RedisConfig       `mapstructure:"redis"`
-	JWT         JWTConfig         `mapstructure:"jwt"`
-	OAuth       OAuthConfig       `mapstructure:"oauth"`
-	Email       EmailConfig       `mapstructure:"email"`
-	Log         LogConfig         `mapstructure:"log"`
-	RateLimit   RateLimitConfig   `mapstructure:"rate_limit"`
-	FilePreview FilePreviewConfig `mapstructure:"file_preview"`
-	Storage     StorageConfig     `mapstructure:"storage"`
+	Server    ServerConfig    `mapstructure:"server"`
+	Database  DatabaseConfig  `mapstructure:"database"`
+	Redis     RedisConfig     `mapstructure:"redis"`
+	JWT       JWTConfig       `mapstructure:"jwt"`
+	OAuth     OAuthConfig     `mapstructure:"oauth"`
+	Email     EmailConfig     `mapstructure:"email"`
+	Log       LogConfig       `mapstructure:"log"`
+	RateLimit RateLimitConfig `mapstructure:"rate_limit"`
+	Storage   StorageConfig   `mapstructure:"storage"`
 }
 
 // ServerConfig 服务器配置
@@ -98,12 +97,6 @@ type LogConfig struct {
 type RateLimitConfig struct {
 	QPS   int `mapstructure:"qps"`
 	Burst int `mapstructure:"burst"`
-}
-
-// FilePreviewConfig 文件预览配置
-type FilePreviewConfig struct {
-	MaxFileSize int64 `mapstructure:"max_file_size"` // 文件大小限制（字节）
-	CacheExpiry int   `mapstructure:"cache_expiry"`  // 缓存过期时间（秒）
 }
 
 // StorageConfig 存储配置
